@@ -1,0 +1,437 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recap Absensi X PPLG 4</title>
+
+<style>
+*{box-sizing:border-box;font-family:Arial,sans-serif}
+body{margin:0;background:#f5f2ec;color:#403a33}
+button,input,select{font:inherit}
+button{border:0;padding:11px 15px;border-radius:8px;background:#89755f;color:white;cursor:pointer}
+.container{max-width:1000px;margin:auto;padding:15px}
+header{background:#89755f;color:white;padding:23px;border-radius:16px}
+header p{font-size:13px;opacity:.85}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.section,.card{background:white;padding:17px;border-radius:13px;margin:15px 0}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.card p{font-size:12px;color:#888;margin:0}
+.card h2{margin:8px 0}
+input,select{padding:10px;border:1px solid #ddd;border-radius:7px;width:100%;background:white}
+.table-wrap{overflow-x:auto}
+table{width:100%;min-width:650px;border-collapse:collapse;font-size:13px;margin-top:12px}
+th,td{padding:11px 8px;border-bottom:1px solid #eee;text-align:center}
+th{background:#f4f0e9;color:#806b55}
+td:nth-child(2),th:nth-child(2){text-align:left}
+input.count{width:58px;text-align:center;padding:8px}
+.login{position:fixed;inset:0;background:#0009;display:flex;justify-content:center;align-items:center;padding:20px}
+.login-box{background:white;padding:25px;border-radius:15px;width:100%;max-width:350px}
+.login-box input{margin:7px 0}
+.hidden{display:none!important}
+.logout{background:#c65b5b}
+.edit{background:#668b80}
+.small{font-size:12px;color:#888}
+.badge{background:#eee;padding:5px 9px;border-radius:20px;font-size:12px}
+footer{text-align:center;color:#999;padding:20px;font-size:12px}
+@media(max-width:600px){.cards{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+ <div class="top">
+  <div>
+   <h2>RECAP ABSENSI</h2>
+   <p>SMK INFORMATIKA CBI</p>
+   <b>X PPLG 4</b>
+   <p>Tahun Pelajaran 2026/2027</p>
+  </div>
+  <button onclick="bukaLogin()" style="background:white;color:#89755f">
+   Login Admin
+  </button>
+ </div>
+</header>
+
+<div class="section">
+ <h3>Riwayat Absensi Bulanan</h3>
+ <label>Pilih bulan:</label>
+ <select id="bulan" onchange="tampilkan()"></select>
+ <p class="small">Pilih bulan untuk melihat rekap kehadiran siswa.</p>
+</div>
+
+<h3>Ringkasan Absensi</h3>
+
+<div class="cards">
+ <div class="card"><p>Total Siswa</p><h2 id="total">43</h2></div>
+ <div class="card"><p>Total Hadir</p><h2 id="hadir">0</h2></div>
+ <div class="card"><p>Total Izin</p><h2 id="izin">0</h2></div>
+ <div class="card"><p>Total Sakit</p><h2 id="sakit">0</h2></div>
+ <div class="card"><p>Total Alfa</p><h2 id="alfa">0</h2></div>
+</div>
+
+<div class="section">
+ <div class="top">
+  <h3>Daftar Rekap Siswa</h3>
+  <span class="badge" id="labelBulan">Juli 2026</span>
+ </div>
+
+ <input id="cari" placeholder="Cari nama siswa..." oninput="tampilkan()">
+
+ <div class="table-wrap">
+ <table>
+  <thead>
+   <tr>
+    <th>No</th>
+    <th>Nama Siswa</th>
+    <th>Hadir</th>
+    <th>Izin</th>
+    <th>Sakit</th>
+    <th>Alfa</th>
+    <th>Total</th>
+   </tr>
+  </thead>
+  <tbody id="daftar"></tbody>
+ </table>
+ </div>
+ <p class="small">Data rekap dapat dilihat oleh semua pengunjung.</p>
+</div>
+
+<div id="panelAdmin" class="section hidden">
+ <div class="top">
+  <h3>Panel Admin</h3>
+  <button class="logout" onclick="logout()">Logout</button>
+ </div>
+
+ <h4>Input Rekap Bulanan</h4>
+
+ <label>Pilih bulan yang ingin diedit</label>
+ <select id="bulanAdmin" onchange="muatAdmin()"></select>
+
+ <p class="small">
+ Masukkan jumlah kehadiran masing-masing siswa.
+ </p>
+
+ <div class="table-wrap">
+ <table>
+  <thead>
+   <tr>
+    <th>No</th>
+    <th>Nama Siswa</th>
+    <th>Hadir</th>
+    <th>Izin</th>
+    <th>Sakit</th>
+    <th>Alfa</th>
+   </tr>
+  </thead>
+  <tbody id="formAdmin"></tbody>
+ </table>
+ </div>
+
+ <button onclick="simpan()" style="margin-top:15px">
+  Simpan Rekap Bulanan
+ </button>
+
+ <button onclick="kosongkan()" style="background:#999">
+  Kosongkan Bulan
+ </button>
+</div>
+
+<footer>
+ Recap Absensi X PPLG 4<br>
+ SMK Informatika CBI
+</footer>
+
+</div>
+
+<!-- LOGIN -->
+<div id="modal" class="login hidden">
+ <div class="login-box">
+  <h2>Login Admin</h2>
+  <p>Masuk untuk mengedit rekap absensi.</p>
+  <input id="username" placeholder="Username">
+  <input id="password" type="password" placeholder="Password">
+  <p id="error" style="color:red;font-size:13px"></p>
+  <button onclick="login()" style="width:100%">Masuk</button>
+  <button onclick="tutupLogin()" style="width:100%;background:#999;margin-top:8px">Batal</button>
+ </div>
+</div>
+
+<script>
+
+// AKUN ADMIN DEMO
+const USER="admin";
+const PASS="cbi12345";
+
+// DAFTAR SISWA
+const namaAwal=[
+"Ahmad Fahri Zulfikar",
+"Alisa Ramadani",
+"Alpino Frilian",
+"Aria Yudha Maulana",
+"Assyifa Oktaviani",
+"Bagus Trihagso",
+"Cynthia Ramadhani Saputra",
+"Eka Maulana Adzandra",
+"Enggiletta Destiana",
+"Fatih Wira Armani",
+"Fauzi Abdillah Apriyandi",
+"Ikhlas Syahrani",
+"Iren Irvani",
+"Khairul Ihsan",
+"M. Fadli Fudhon Al Chered",
+"M. Panji Komara",
+"Mahera Rahma",
+"Muhamad Andreyan",
+"Muhamad Ghifarie",
+"Muhamad Rial",
+"Muhamad Rizky Arbian",
+"Muhammad Afkaar Jiyaad",
+"Muhammad Lidan Kurnia Putra",
+"Muhammad Radila Firansyah",
+"Najla Nur Jihan",
+"Natasya Ayu",
+"Nazwah Sasia Almuhyi",
+"Noufal Faiza Novriliano",
+"Padil Ramadan",
+"Rafa Putra Fatanda",
+"Rehan",
+"Renita Regina Putri",
+"Ristiansyah",
+"Bilqis Nurun Syafitri",
+"Ristyani Putri",
+"Rizky Jaya Ramadhan",
+"Salsa Liqia Nova",
+"Satria Mohamad Pratama",
+"Tifani Septia Ramadantia",
+"Wildan Rihansyah",
+"Yanki Alfarizzy Salam",
+"Zaskia Oktaviani",
+"Zauri Radhitya Paksy"
+];
+
+// PENYIMPANAN
+let siswa=JSON.parse(localStorage.getItem("siswaBulanan"))||namaAwal;
+
+let arsip=JSON.parse(localStorage.getItem("rekapBulanan"))||{};
+
+const bulanList=[
+["2026-07","Juli 2026"],
+["2026-08","Agustus 2026"],
+["2026-09","September 2026"],
+["2026-10","Oktober 2026"],
+["2026-11","November 2026"],
+["2026-12","Desember 2026"],
+["2027-01","Januari 2027"],
+["2027-02","Februari 2027"],
+["2027-03","Maret 2027"],
+["2027-04","April 2027"],
+["2027-05","Mei 2027"],
+["2027-06","Juni 2027"]
+];
+
+let adminAktif=sessionStorage.getItem("admin") === "yes";
+
+let bulan=document.getElementById("bulan");
+let bulanAdmin=document.getElementById("bulanAdmin");
+
+bulanList.forEach(b=>{
+ let a=document.createElement("option");
+ a.value=b[0];
+ a.textContent=b[1];
+ bulan.appendChild(a);
+
+ let c=document.createElement("option");
+ c.value=b[0];
+ c.textContent=b[1];
+ bulanAdmin.appendChild(c);
+});
+
+bulan.value="2026-07";
+bulanAdmin.value="2026-07";
+
+// LOGIN
+function bukaLogin(){
+ document.getElementById("modal").classList.remove("hidden");
+}
+
+function tutupLogin(){
+ document.getElementById("modal").classList.add("hidden");
+}
+
+function login(){
+ let u=document.getElementById("username").value;
+ let p=document.getElementById("password").value;
+
+ if(u===USER && p===PASS){
+  adminAktif=true;
+  sessionStorage.setItem("admin","yes");
+  tutupLogin();
+  bukaPanel();
+ }else{
+  document.getElementById("error").textContent="Username atau password salah!";
+ }
+}
+
+function logout(){
+ adminAktif=false;
+ sessionStorage.removeItem("admin");
+ document.getElementById("panelAdmin").classList.add("hidden");
+}
+
+function bukaPanel(){
+ document.getElementById("panelAdmin").classList.remove("hidden");
+ muatAdmin();
+}
+
+// SIMPAN DATA
+function simpanStorage(){
+ localStorage.setItem("siswaBulanan",JSON.stringify(siswa));
+ localStorage.setItem("rekapBulanan",JSON.stringify(arsip));
+}
+
+// TAMPILKAN REKAP UMUM
+function tampilkan(){
+ let b=bulan.value;
+ let data=arsip[b]||{};
+ let cari=document.getElementById("cari").value.toLowerCase();
+
+ let daftar=document.getElementById("daftar");
+ daftar.innerHTML="";
+
+ let jumlah={hadir:0,izin:0,sakit:0,alfa:0};
+
+ siswa.forEach((nama,index)=>{
+  let d=data[nama]||{hadir:0,izin:0,sakit:0,alfa:0};
+
+  jumlah.hadir+=d.hadir;
+  jumlah.izin+=d.izin;
+  jumlah.sakit+=d.sakit;
+  jumlah.alfa+=d.alfa;
+
+  if(!nama.toLowerCase().includes(cari))return;
+
+  let total=d.hadir+d.izin+d.sakit+d.alfa;
+
+  let tr=document.createElement("tr");
+
+  [index+1,nama,d.hadir,d.izin,d.sakit,d.alfa,total].forEach(v=>{
+   let td=document.createElement("td");
+   td.textContent=v;
+   tr.appendChild(td);
+  });
+
+  daftar.appendChild(tr);
+ });
+
+ document.getElementById("total").textContent=siswa.length;
+ document.getElementById("hadir").textContent=jumlah.hadir;
+ document.getElementById("izin").textContent=jumlah.izin;
+ document.getElementById("sakit").textContent=jumlah.sakit;
+ document.getElementById("alfa").textContent=jumlah.alfa;
+
+ document.getElementById("labelBulan").textContent=
+  bulanList.find(x=>x[0]===b)[1];
+}
+
+// FORM ADMIN
+function muatAdmin(){
+ let b=bulanAdmin.value;
+ let data=arsip[b]||{};
+ let form=document.getElementById("formAdmin");
+
+ form.innerHTML="";
+
+ siswa.forEach((nama,index)=>{
+  let d=data[nama]||{hadir:0,izin:0,sakit:0,alfa:0};
+
+  let tr=document.createElement("tr");
+
+  let no=document.createElement("td");
+  no.textContent=index+1;
+
+  let nm=document.createElement("td");
+  nm.textContent=nama;
+
+  tr.append(no,nm);
+
+  ["hadir","izin","sakit","alfa"].forEach(status=>{
+   let td=document.createElement("td");
+   let input=document.createElement("input");
+
+   input.type="number";
+   input.min="0";
+   input.step="1";
+   input.value=d[status];
+   input.className="count";
+   input.dataset.nama=nama;
+   input.dataset.status=status;
+
+   td.appendChild(input);
+   tr.appendChild(td);
+  });
+
+  form.appendChild(tr);
+ });
+}
+
+// SIMPAN BULAN
+function simpan(){
+ if(!adminAktif)return;
+
+ let b=bulanAdmin.value;
+ let data={};
+
+ document.querySelectorAll("#formAdmin input").forEach(input=>{
+  let nama=input.dataset.nama;
+  let status=input.dataset.status;
+  let nilai=Number(input.value);
+
+  if(!Number.isInteger(nilai)||nilai<0){
+   return;
+  }
+
+  if(!data[nama]){
+   data[nama]={hadir:0,izin:0,sakit:0,alfa:0};
+  }
+
+  data[nama][status]=nilai;
+ });
+
+ arsip[b]=data;
+ simpanStorage();
+
+ bulan.value=b;
+ tampilkan();
+
+ alert("Rekap bulan berhasil disimpan!");
+}
+
+// KOSONGKAN BULAN
+function kosongkan(){
+ if(!adminAktif)return;
+
+ let b=bulanAdmin.value;
+
+ if(confirm("Yakin ingin menghapus seluruh rekap bulan ini?")){
+  delete arsip[b];
+  simpanStorage();
+  muatAdmin();
+  tampilkan();
+ }
+}
+
+// MULAI
+tampilkan();
+
+if(adminAktif){
+ bukaPanel();
+}
+
+</script>
+</body>
+</html>
